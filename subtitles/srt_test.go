@@ -3,7 +3,6 @@ package subtitles
 import (
 	"testing"
 	"time"
-	"fmt"
 )
 
 const okSrt = `1
@@ -31,16 +30,18 @@ func TestParseSrt(t *testing.T) {
 	}
 }
 
-func TestShift(t *testing.T) {
-	subs, _ := ParseSrt(okSrt)
+func TestShiftSrt(t *testing.T) {
+	subs, err := ParseSrt(okSrt)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if subs.entries[0].start.Second() != 10 {
 		t.Error("The 0th Entry's start sec is 10")
 	}
 
 	subs.Shift(time.Second)
-
-	fmt.Println(subs.entries[0].start.Second())
 
 	if subs.entries[0].start.Second() != 11 {
 		t.Error("A shift of 10s + 1s should be 11s!")
