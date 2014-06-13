@@ -1,9 +1,9 @@
 package subtitles
 
 import (
+	"errors"
 	"image/color"
 	"time"
-	"strings"
 )
 
 type Subtitles struct {
@@ -24,24 +24,24 @@ func (s *Subtitles) Shift(delta time.Duration) *Subtitles {
 	return s
 }
 
+func (s *Subtitles) As(ext string) (string, error) {
+	switch ext {
+	case "srt":
+		return s.Srt(), nil
+	case "sub":
+		return s.Sub(), nil
+	}
+
+	return "",
+		errors.New("Cannot format subtitles with extension: " + ext)
+}
+
 type Entry struct {
 	id    int
 	start time.Time
 	end   time.Time
 	frags []Fragment
 	text  []string
-}
-
-func (e *Entry) AddText(text string) {
-	e.text = append(e.text, text)
-}
-
-func (e *Entry) Complete() *Entry {
-	e.frags = append(e.frags, Fragment{
-		text: strings.Join(e.text, "\n"),
-	})
-
-	return e
 }
 
 type Fragment struct {

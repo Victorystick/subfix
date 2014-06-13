@@ -20,10 +20,14 @@ func ParseSrt(content string) (*Subtitles, error) {
 	next := 1
 	var entry *Entry = nil
 
+	text := ""
+
 	for _, line := range lines {
 		if line == "" {
 			if entry != nil {
-				subs.Append(entry.Complete())
+				entry.frags = fragsFromText(text)
+				text = ""
+				subs.Append(entry)
 			}
 			entry = nil
 		} else if entry == nil {
@@ -56,16 +60,27 @@ func ParseSrt(content string) (*Subtitles, error) {
 			}
 
 			entry.end = t
+		} else if (text == "") {
+			text = line
 		} else {
-			entry.AddText(line)
+			text += "\n" + line
 		}
 	}
 
 	if entry != nil {
-		subs.Append(entry.Complete())
+		entry.frags = fragsFromText(text)
+		subs.Append(entry)
 	}
 
 	return subs, nil
+}
+
+func fragsFromText(text string) (frags []Fragment) {
+	frags = append(frags, Fragment{
+		text: text,
+	})
+
+	return
 }
 
 func (s Subtitles) Srt() string {
@@ -97,5 +112,19 @@ func (e Entry) Srt() string {
 }
 
 func (f Fragment) Srt() string {
-	return f.text
+	text := f.text
+
+	if f.italic {
+		text = "<i>" + text + "</i>"
+	}
+
+	if f.bold {
+		text = "<b>" + text + "</b>"
+	}
+
+	if f.underline {
+		text = "<u>" + text + "</u>"
+	}
+
+	return text
 }
