@@ -4,8 +4,6 @@ import (
 	"errors"
 	"image/color"
 	"time"
-	"fmt"
-	"strings"
 )
 
 type Subtitles struct {
