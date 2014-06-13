@@ -32,9 +32,25 @@ func main() {
 	}
 
 	if flag.NArg() == 1 {
-		validateSubtitles(filename)
+		subs, err := subtitles.ReadFile(filename)
 
-		fmt.Println(filename + " was successfully parsed.")
+		die(err)
+
+		if outfile != filename {
+			ext, err := subtitles.Extension(outfile)
+
+			die(err)
+
+			text, err := subs.As(ext)
+
+			die(err)
+
+			err = ioutil.WriteFile(outfile, []byte(text), 0666)
+
+			die(err)
+		} else {
+			fmt.Println(filename + " was successfully parsed.")
+		}
 	} else {
 		ext, err := subtitles.Extension(outfile)
 
@@ -54,12 +70,6 @@ func main() {
 
 		die(err)
 	}
-}
-
-func validateSubtitles(filename string) {
-	_, err := subtitles.ReadFile(filename)
-
-	die(err)
 }
 
 func shiftSubtitles(filename string, shift time.Duration) *subtitles.Subtitles {
