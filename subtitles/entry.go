@@ -4,6 +4,8 @@ import (
 	"errors"
 	"image/color"
 	"time"
+	"fmt"
+	"strings"
 )
 
 type Subtitles struct {
@@ -36,12 +38,37 @@ func (s *Subtitles) As(ext string) (string, error) {
 		errors.New("Cannot format subtitles with extension: " + ext)
 }
 
+func (s Subtitles) Equal(s2 Subtitles) bool {
+	for i, e := range s.entries {
+		if !e.Equal(*s2.entries[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 type Entry struct {
 	id    int
 	start time.Time
 	end   time.Time
 	frags []Fragment
-	text  []string
+}
+
+func (e Entry) Equal(e2 Entry) bool {
+	if e.id != e2.id {
+		return false
+	}
+
+	if !e.start.Equal(e2.start) {
+		return false
+	}
+
+	if !e.end.Equal(e2.end) {
+		return false
+	}
+
+	return true
 }
 
 type Fragment struct {

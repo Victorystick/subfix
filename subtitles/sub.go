@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+var (
+	timeZero = time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC)
+)
+
+const (
+	framesASecond = int64(time.Second) / 24
+)
+
 func ParseSub(content string) (*Subtitles, error) {
 	lines := strings.Split(content, "\n")
 
@@ -60,8 +68,8 @@ func ParseSub(content string) (*Subtitles, error) {
 
 		entry := &Entry{
 			id:    next,
-			start: time.Unix(int64(start/24), int64((start%24)*1000000000/24.0)),
-			end:   time.Unix(int64(end/24), int64((end%24)*1000000000/24.0)),
+			start: framesToTime(start),
+			end:   framesToTime(end),
 			frags: frags,
 		}
 
@@ -70,6 +78,19 @@ func ParseSub(content string) (*Subtitles, error) {
 	}
 
 	return subs, nil
+}
+
+func framesToTime(number int) time.Time {
+	return timeZero.Add(
+		time.Second * time.Duration(number/24) +
+		time.Duration((float64(number%24)/24)*1000000000))
+}
+
+func timeToFrames(t time.Time) int {
+	return (((t.Hour() * 60) +
+		t.Minute() * 60) + 
+		t.Second() * 24) +
+		t.Nanosecond() / (1000000000 / 24)
 }
 
 func (s Subtitles) Sub() string {
@@ -90,8 +111,8 @@ func (e Entry) Sub() string {
 	}
 
 	str := fmt.Sprintf("{%d}{%d}%s",
-		uint64(float64(e.start.UnixNano())/(float64(time.Second)/24.0)),
-		uint64(float64(e.end.UnixNano())/(float64(time.Second)/24.0)),
+		timeToFrames(e.start),
+		timeToFrames(e.end),
 		strings.Join(frags, "|"))
 
 	return str

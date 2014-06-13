@@ -9,6 +9,29 @@ import (
 const okSub = `{252}{312}Elephant's Dream
 {360}{432}At the left we can see...
 `
+const (
+	s = time.Second
+	ms = time.Millisecond
+)
+
+func TestFramesToTime(t *testing.T) {
+	const start = 252
+	const end = 312
+
+	if !framesToTime(start).Equal(timeZero.Add(10 * s + 500 * ms)) {
+		t.Log(framesToTime(start))
+		t.Error("Expected ")
+	}
+
+	if !framesToTime(end).Equal(timeZero.Add(13 * s)) {
+		t.Log(framesToTime(end))
+		t.Error("Expected ")
+	}
+}
+
+func TestTimeToFrames(t *testing.T) {
+	
+}
 
 func TestParseSub(t *testing.T) {
 	subs, err := ParseSub(okSub)
@@ -22,8 +45,8 @@ func TestParseSub(t *testing.T) {
 	}
 
 	if subs.Sub() != okSub {
-		fmt.Printf("`%s`", okSub)
-		fmt.Printf("`%s`", subs.Sub())
+		fmt.Printf("`%s`\n", okSub)
+		fmt.Printf("`%s`\n", subs.Sub())
 		t.Error("The subtitles shoudn't be changed by parsing and printing.")
 	}
 }
