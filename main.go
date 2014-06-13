@@ -1,17 +1,23 @@
 package main
 
 import (
-	"github.com/victorystick/subfix/subtitles"
 	"flag"
 	"fmt"
-	"os"
+	"github.com/victorystick/subfix/subtitles"
 	"io/ioutil"
+	"os"
 	"time"
+)
+
+var (
+	outfile string
 )
 
 // usage:
 // subfix file delay
 func main() {
+	flag.StringVar(&outfile, "outfile", "", "Name ouf the output file.")
+
 	flag.Parse()
 
 	if flag.NArg() < 1 || flag.NArg() > 2 {
@@ -21,18 +27,32 @@ func main() {
 
 	filename := flag.Arg(0)
 
+	if outfile == "" {
+		outfile = filename
+	}
+
 	if flag.NArg() == 1 {
 		validateSubtitles(filename)
 
 		fmt.Println(filename + " was successfully parsed.")
 	} else {
+		ext, err := subtitles.Extension(outfile)
+
+		die(err)
+
 		shift, err := time.ParseDuration(flag.Arg(1))
 
 		die(err)
 
 		subs := shiftSubtitles(filename, shift)
 
-		ioutil.WriteFile(filename, []byte(subs.Srt()), 0)
+		text, err := subs.As(ext)
+
+		die(err)
+
+		err = ioutil.WriteFile(outfile, []byte(text), 0666)
+
+		die(err)
 	}
 }
 
