@@ -9,6 +9,7 @@ import (
 
 var extParser = map[string]subtitleParser{
 	"srt": ParseSrt,
+	"sub": ParseSub,
 }
 
 var emptyTime time.Time
