@@ -1,5 +1,4 @@
-subfix
-======
+# subfix [![Build Status](https://travis-ci.org/Victorystick/subfix.svg?branch=master)](https://travis-ci.org/Victorystick/subfix)
 
 SubFix is a small program for manipulating subtitle files.
 
