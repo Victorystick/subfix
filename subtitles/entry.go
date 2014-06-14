@@ -15,6 +15,7 @@ func (s *Subtitles) Append(e *Entry) {
 	s.entries = append(s.entries, e)
 }
 
+// Shifts all Entries delta time.
 func (s *Subtitles) Shift(delta time.Duration) *Subtitles {
 	for _, e := range s.entries {
 		e.start = e.start.Add(delta)
@@ -24,6 +25,9 @@ func (s *Subtitles) Shift(delta time.Duration) *Subtitles {
 	return s
 }
 
+// Returns the Subtitles as a string formatted like files
+// with the given extension. An error is returned if the
+// extension is unknown.
 func (s *Subtitles) As(ext string) (string, error) {
 	switch ext {
 	case "srt":
@@ -36,6 +40,8 @@ func (s *Subtitles) As(ext string) (string, error) {
 		errors.New("Cannot format subtitles with extension: " + ext)
 }
 
+// Two pairs of Subtitles are assumed to be equal,
+// if all their entries are equivalent.
 func (s Subtitles) Equal(s2 Subtitles) bool {
 	for i, e := range s.entries {
 		if !e.Equal(*s2.entries[i]) {
@@ -46,13 +52,30 @@ func (s Subtitles) Equal(s2 Subtitles) bool {
 	return true
 }
 
+// A subtitle Entry is any amount of text displayed on screen
+// within any interval. The text itself may consist of a number of
+// fragments, each with different styles.
 type Entry struct {
+	// id specifies the number of the entry, starting with 1
 	id    int
+
+	// start specifies the starting time at which the subtitle
+	// is to be displayed. The video is assumed to begin
+	// Year 0, January, 1st 00:00:00.000000000
 	start time.Time
+
+	// end specifies the ending time when the subtitles
+	// should no longer be displayed.
 	end   time.Time
+
+	// frags is the slice of Fragments or pieces of text that
+	// are to be displayed.
 	frags []Fragment
 }
 
+// Two entries are assumed to be equal if
+// their ids, start times and end times,
+// and fragments are equal
 func (e Entry) Equal(e2 Entry) bool {
 	if e.id != e2.id {
 		return false
