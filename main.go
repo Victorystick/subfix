@@ -11,16 +11,21 @@ import (
 
 var (
 	outfile string
+	shift   time.Duration
 )
 
-// usage:
-// subfix file delay
 func main() {
-	flag.StringVar(&outfile, "outfile", "", "Name ouf the output file.")
+	flag.StringVar(&outfile, "outfile", "", "Name of the output file.")
+	flag.DurationVar(&shift, "ts", 0, "Amount of time to shift the subtitles.")
 
 	flag.Parse()
 
-	if flag.NArg() < 1 || flag.NArg() > 2 {
+	fmt.Println("args", flag.NArg())
+	fmt.Println("outfile", outfile)
+	fmt.Println("shift", shift)
+
+	if flag.NArg() != 1 {
+		fmt.Printf("Not enough arguments to subfix, try: %s [options] file\n", os.Args[0])
 		printUsage()
 		os.Exit(0)
 	}
@@ -31,36 +36,18 @@ func main() {
 		outfile = filename
 	}
 
-	if flag.NArg() == 1 {
-		subs, err := subtitles.ReadFile(filename)
+	subs, err := subtitles.ReadFile(filename)
 
-		die(err)
+	die(err)
 
-		if outfile != filename {
-			ext, err := subtitles.Extension(outfile)
-
-			die(err)
-
-			text, err := subs.As(ext)
-
-			die(err)
-
-			err = ioutil.WriteFile(outfile, []byte(text), 0666)
-
-			die(err)
-		} else {
-			fmt.Println(filename + " was successfully parsed.")
-		}
-	} else {
+	if outfile != filename {
 		ext, err := subtitles.Extension(outfile)
 
 		die(err)
 
-		shift, err := time.ParseDuration(flag.Arg(1))
-
-		die(err)
-
-		subs := shiftSubtitles(filename, shift)
+		if uint64(shift) != 0 {
+			subs.Shift(shift)
+		}
 
 		text, err := subs.As(ext)
 
@@ -69,17 +56,9 @@ func main() {
 		err = ioutil.WriteFile(outfile, []byte(text), 0666)
 
 		die(err)
+	} else {
+		fmt.Println(filename + " was successfully parsed.")
 	}
-}
-
-func shiftSubtitles(filename string, shift time.Duration) *subtitles.Subtitles {
-	subs, err := subtitles.ReadFile(filename)
-
-	die(err)
-
-	subs.Shift(shift)
-
-	return subs
 }
 
 func die(err error) {
@@ -90,7 +69,6 @@ func die(err error) {
 }
 
 func printUsage() {
-	fmt.Println("subfix filename delay")
-	fmt.Println("\tsupported filetypes:   srt")
-	fmt.Println("\texample delays:        4.3s 1200ms")
+	fmt.Println("Usage of subfix:")
+	flag.PrintDefaults()
 }
