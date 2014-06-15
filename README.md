@@ -12,9 +12,9 @@ subfix movie.srt
 ```
 
 ### Timing ###
-SubFix can adjust the timing of a subtitle file easily. If you want to delay the subtitles 5.4 seconds, do:
+SubFix can adjust the timing of a subtitle file easily. If you want to delay the subtitles 5.4 seconds, set the time shift (ts) flag:
 ```sh
-subfix movie.srt 5.4s
+subfix --ts 5.4s movie.srt
 ```
 If you instead want to hasten the subtitles just add a minus, like `-5.4s`.
 
