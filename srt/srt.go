@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"image/color"
 )
 
 // srt.go Manages conversion to and from `.srt` subtitles.
@@ -128,6 +129,19 @@ func (f Fragment) Srt() string {
 
 	if f.underline {
 		text = "<u>" + text + "</u>"
+	}
+
+	if f.color != nil {
+		rgba := color.RGBAModel.Convert(f.color).(color.RGBA)
+
+		if rgba.A != 255 {
+
+		} else {
+			text = fmt.Sprintf(
+				"<font color=\"#%02x%02x%02x\">%s</font>",
+				rgba.R, rgba.G, rgba.B, text)
+		}
+
 	}
 
 	return text

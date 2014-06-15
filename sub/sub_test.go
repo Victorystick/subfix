@@ -68,3 +68,18 @@ func TestShiftSub(t *testing.T) {
 		t.Error("A shift of 10s + 1s should be 11s!")
 	}
 }
+
+const italicAndGreen =
+	"{c:$00ff00}{y:i}Wooh! I'm italic and green!"
+
+func TestFragmentString(t *testing.T) {
+	frag := Fragment{
+		italic: true,
+		text: "Wooh! I'm italic and green!",
+		color: color.RGBA{0, 0xff, 0, 0xff},
+	}
+
+	if frag.Sub() != italicAndGreen {
+		t.Errorf("%s should equal %s", frag.Sub(), italicAndGreen)
+	}
+}

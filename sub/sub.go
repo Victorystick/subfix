@@ -115,11 +115,41 @@ func (e Entry) Sub() string {
 	str := fmt.Sprintf("{%d}{%d}%s",
 		timeToFrames(e.start),
 		timeToFrames(e.end),
-		strings.Join(frags, "|"))
+		strings.Join(frags, ""))
 
 	return str
 }
 
 func (f Fragment) Sub() string {
-	return strings.Replace(f.text, "\n", "|", -1)
+	text := f.text
+
+	var styles []string
+
+	if f.italic {
+		styles = append(styles, "i")
+	}
+
+	if f.bold {
+		styles = append(styles, "b")
+	}
+
+	if f.underline {
+		styles = append(styles, "u")
+	}
+
+	if len(styles) > 0 {
+		text = fmt.Sprintf("{y:%s}%s",
+			strings.Join(styles, ","), text)
+	}
+
+	if f.color != nil {
+		rgba := color.RGBAModel.Convert(f.color).(color.RGBA)
+
+		text = fmt.Sprintf(
+			"{c:$%02x%02x%02x}%s",
+			rgba.B, rgba.G, rgba.R, text)
+
+	}
+
+	return text
 }

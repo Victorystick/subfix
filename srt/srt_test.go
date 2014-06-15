@@ -3,6 +3,8 @@ package subtitles
 import (
 	"testing"
 	"time"
+	"image/color"
+	// "fmt"
 )
 
 const okSrt = `1
@@ -45,5 +47,20 @@ func TestShiftSrt(t *testing.T) {
 
 	if subs.entries[0].start.Second() != 11 {
 		t.Error("A shift of 10s + 1s should be 11s!")
+	}
+}
+
+const italicAndGreen =
+	"<font color=\"#00ff00\"><i>Wooh! I'm italic and green!</i></font>"
+
+func TestFragmentString(t *testing.T) {
+	frag := Fragment{
+		italic: true,
+		text: "Wooh! I'm italic and green!",
+		color: color.RGBA{0, 0xff, 0, 0xff},
+	}
+
+	if frag.Srt() != italicAndGreen {
+		t.Errorf("%s should equal %s", frag.Srt(), italicAndGreen)
 	}
 }
