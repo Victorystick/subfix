@@ -10,7 +10,7 @@ const okSub = `{252}{312}Elephant's Dream
 {360}{432}At the left we can see...
 `
 const (
-	s = time.Second
+	s  = time.Second
 	ms = time.Millisecond
 )
 
@@ -18,7 +18,7 @@ func TestFramesToTime(t *testing.T) {
 	const start = 252
 	const end = 312
 
-	if !framesToTime(start).Equal(timeZero.Add(10 * s + 500 * ms)) {
+	if !framesToTime(start).Equal(timeZero.Add(10*s + 500*ms)) {
 		t.Log(framesToTime(start))
 		t.Error("Expected ")
 	}
@@ -30,7 +30,7 @@ func TestFramesToTime(t *testing.T) {
 }
 
 func TestTimeToFrames(t *testing.T) {
-	
+
 }
 
 func TestParseSub(t *testing.T) {

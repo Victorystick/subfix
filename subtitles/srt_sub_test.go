@@ -1,13 +1,22 @@
 package subtitles
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestSrtSubEquality(t *testing.T) {
-	srt, _ := ParseSrt(okSrt)
-	sub, _ := ParseSub(okSub)
+	srt, err := ParseSrt(okSrt)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	sub, err := ParseSub(okSub)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	// fmt.Printf("%v\n", srt)
 	// fmt.Printf("%v\n", sub)
