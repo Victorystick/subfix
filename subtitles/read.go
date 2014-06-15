@@ -4,15 +4,12 @@ import (
 	"errors"
 	"io/ioutil"
 	"strings"
-	"time"
 )
 
 var extParser = map[string]subtitleParser{
 	"srt": ParseSrt,
 	"sub": ParseSub,
 }
-
-var emptyTime time.Time
 
 func ReadFile(filename string) (*Subtitles, error) {
 	ext, err := Extension(filename)

@@ -8,9 +8,13 @@ import (
 	"time"
 )
 
+// srt.go Manages conversion to and from `.srt` subtitles.
+
 const (
 	srtTime = "15:04:05.000"
 )
+
+var emptyTime time.Time
 
 func ParseSrt(content string) (*Subtitles, error) {
 	lines := strings.Split(content, "\n")
@@ -60,7 +64,7 @@ func ParseSrt(content string) (*Subtitles, error) {
 			}
 
 			entry.end = t
-		} else if (text == "") {
+		} else if text == "" {
 			text = line
 		} else {
 			text += "\n" + line
