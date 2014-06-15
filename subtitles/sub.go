@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// sub.go Manages conversion to and from `.sub` subtitles.
+
 var (
 	timeZero = time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC)
 )
@@ -82,15 +84,15 @@ func ParseSub(content string) (*Subtitles, error) {
 
 func framesToTime(number int) time.Time {
 	return timeZero.Add(
-		time.Second * time.Duration(number/24) +
-		time.Duration((float64(number%24)/24)*1000000000))
+		time.Second*time.Duration(number/24) +
+			time.Duration((float64(number%24)/24)*1000000000))
 }
 
 func timeToFrames(t time.Time) int {
 	return (((t.Hour() * 60) +
-		t.Minute() * 60) + 
-		t.Second() * 24) +
-		t.Nanosecond() / (1000000000 / 24)
+		t.Minute()*60) +
+		t.Second()*24) +
+		t.Nanosecond()/(1000000000/24)
 }
 
 func (s Subtitles) Sub() string {
