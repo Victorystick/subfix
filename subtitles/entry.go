@@ -57,7 +57,7 @@ func (s Subtitles) Equal(s2 Subtitles) bool {
 // fragments, each with different styles.
 type Entry struct {
 	// id specifies the number of the entry, starting with 1
-	id    int
+	id int
 
 	// start specifies the starting time at which the subtitle
 	// is to be displayed. The video is assumed to begin
@@ -66,7 +66,7 @@ type Entry struct {
 
 	// end specifies the ending time when the subtitles
 	// should no longer be displayed.
-	end   time.Time
+	end time.Time
 
 	// frags is the slice of Fragments or pieces of text that
 	// are to be displayed.
@@ -89,6 +89,12 @@ func (e Entry) Equal(e2 Entry) bool {
 		return false
 	}
 
+	for i, frag := range e.frags {
+		if !frag.Equal(e2.frags[i]) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -96,6 +102,32 @@ type Fragment struct {
 	bold, italic, underline bool
 	text                    string
 	color                   color.Color
+}
+
+func (f Fragment) Equal(f2 Fragment) bool {
+	if f.color == nil {
+		if f2.color != nil {
+			return false
+		}
+	} else {
+		if f2.color == nil {
+			return false
+		}
+
+		r, g, b, a := f.color.RGBA()
+		r2, g2, b2, a2 := f2.color.RGBA()
+
+		colorsEqual := r == r2 && g == g2 && b == b2 && a == a2
+
+		if !colorsEqual {
+			return false
+		}
+	}
+
+	return f.bold == f2.bold &&
+		f.italic == f2.italic &&
+		f.underline == f2.underline &&
+		f.text == f2.text
 }
 
 type subtitleParser func(string) (*Subtitles, error)
