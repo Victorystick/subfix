@@ -1,4 +1,4 @@
-package subtitles
+package subfix
 
 import (
 	"errors"
@@ -6,9 +6,12 @@ import (
 	"strings"
 )
 
-var extParser = map[string]subtitleParser{
-	"srt": ParseSrt,
-	"sub": ParseSub,
+type Parser func(string) (*Subtitles, error)
+
+var parsers = make(map[string]Parser)
+
+func AddParser(extension string, parser Parser) {
+	parsers[extension] = parser
 }
 
 func ReadFile(filename string) (*Subtitles, error) {
@@ -24,7 +27,7 @@ func ReadFile(filename string) (*Subtitles, error) {
 		return nil, err
 	}
 
-	parser, ok := extParser[ext]
+	parser, ok := parsers[ext]
 
 	if !ok {
 		return nil, errors.New("Unrecognized subtitle format: " + ext)

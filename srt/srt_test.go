@@ -1,10 +1,10 @@
-package subtitles
+package srt
 
 import (
+	. "github.com/victorystick/subfix"
 	"testing"
 	"time"
 	"image/color"
-	// "fmt"
 )
 
 const okSrt = `1
@@ -17,7 +17,7 @@ At the left we can see...
 `
 
 func TestParseSrt(t *testing.T) {
-	subs, err := ParseSrt(okSrt)
+	subs, err := Parse(okSrt)
 
 	if err != nil {
 		t.Error(err)
@@ -27,25 +27,25 @@ func TestParseSrt(t *testing.T) {
 		t.Error("ParseSrt shouldn't return nil after a successful parse.")
 	}
 
-	if subs.Srt() != okSrt {
+	if Emit(subs) != okSrt {
 		t.Error("The subtitles shoudn't be changed by parsing and printing.")
 	}
 }
 
 func TestShiftSrt(t *testing.T) {
-	subs, err := ParseSrt(okSrt)
+	subs, err := Parse(okSrt)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	if subs.entries[0].start.Second() != 10 {
+	if subs.Entries[0].Start.Second() != 10 {
 		t.Error("The 0th Entry's start sec is 10")
 	}
 
 	subs.Shift(time.Second)
 
-	if subs.entries[0].start.Second() != 11 {
+	if subs.Entries[0].Start.Second() != 11 {
 		t.Error("A shift of 10s + 1s should be 11s!")
 	}
 }
@@ -55,12 +55,12 @@ const italicAndGreen =
 
 func TestFragmentString(t *testing.T) {
 	frag := Fragment{
-		italic: true,
-		text: "Wooh! I'm italic and green!",
-		color: color.RGBA{0, 0xff, 0, 0xff},
+		Italic: true,
+		Text: "Wooh! I'm italic and green!",
+		Color: color.RGBA{0, 0xff, 0, 0xff},
 	}
 
-	if frag.Srt() != italicAndGreen {
-		t.Errorf("%s should equal %s", frag.Srt(), italicAndGreen)
+	if SrtFrag(frag) != italicAndGreen {
+		t.Errorf("%s should equal %s", SrtFrag(frag), italicAndGreen)
 	}
 }

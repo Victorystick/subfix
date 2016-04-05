@@ -1,6 +1,7 @@
-package subtitles
+package srt
 
 import (
+	. "github.com/victorystick/subfix"
 	"errors"
 	"fmt"
 	"strconv"
@@ -17,7 +18,12 @@ const (
 
 var emptyTime time.Time
 
-func ParseSrt(content string) (*Subtitles, error) {
+func Register() {
+	AddParser("srt", Parse)
+	AddEmitter("srt", Emit)
+}
+
+func Parse(content string) (*Subtitles, error) {
 	lines := strings.Split(content, "\n")
 
 	subs := new(Subtitles)
@@ -30,7 +36,7 @@ func ParseSrt(content string) (*Subtitles, error) {
 	for _, line := range lines {
 		if line == "" {
 			if entry != nil {
-				entry.frags = fragsFromText(text)
+				entry.Frags = fragsFromText(text)
 				text = ""
 				subs.Append(entry)
 			}
@@ -43,9 +49,9 @@ func ParseSrt(content string) (*Subtitles, error) {
 					"Expected %d, got %s", next, line))
 			}
 
-			entry = &Entry{id: next}
+			entry = &Entry{Id: next}
 			next++
-		} else if entry.start.Equal(emptyTime) {
+		} else if entry.Start.Equal(emptyTime) {
 			times := strings.Split(line, " --> ")
 
 			t, err := time.Parse(srtTime,
@@ -55,7 +61,7 @@ func ParseSrt(content string) (*Subtitles, error) {
 				return nil, err
 			}
 
-			entry.start = t
+			entry.Start = t
 
 			t, err = time.Parse(srtTime,
 				strings.Replace(times[1], ",", ".", 1))
@@ -64,7 +70,7 @@ func ParseSrt(content string) (*Subtitles, error) {
 				return nil, err
 			}
 
-			entry.end = t
+			entry.End = t
 		} else if text == "" {
 			text = line
 		} else {
@@ -73,7 +79,7 @@ func ParseSrt(content string) (*Subtitles, error) {
 	}
 
 	if entry != nil {
-		entry.frags = fragsFromText(text)
+		entry.Frags = fragsFromText(text)
 		subs.Append(entry)
 	}
 
@@ -82,57 +88,57 @@ func ParseSrt(content string) (*Subtitles, error) {
 
 func fragsFromText(text string) (frags []Fragment) {
 	frags = append(frags, Fragment{
-		text: text,
+		Text: text,
 	})
 
 	return
 }
 
-func (s Subtitles) Srt() string {
-	strs := make([]string, len(s.entries))
+func Emit(s *Subtitles) string {
+	strs := make([]string, len(s.Entries))
 
-	for i, e := range s.entries {
-		strs[i] = e.Srt()
+	for i, e := range s.Entries {
+		strs[i] = SrtEntry(e)
 	}
 
 	return strings.Join(strs, "\n")
 }
 
-func (e Entry) Srt() string {
-	frags := make([]string, len(e.frags))
+func SrtEntry(e *Entry) string {
+	frags := make([]string, len(e.Frags))
 
-	for i, frag := range e.frags {
-		frags[i] = frag.Srt()
+	for i, frag := range e.Frags {
+		frags[i] = SrtFrag(frag)
 	}
 
 	str := fmt.Sprintf("%d\n%s --> %s\n%s\n",
-		e.id,
+		e.Id,
 		strings.Replace(
-			e.start.Format(srtTime), ".", ",", 1),
+			e.Start.Format(srtTime), ".", ",", 1),
 		strings.Replace(
-			e.end.Format(srtTime), ".", ",", 1),
+			e.End.Format(srtTime), ".", ",", 1),
 		strings.Join(frags, ""))
 
 	return str
 }
 
-func (f Fragment) Srt() string {
-	text := f.text
+func SrtFrag(f Fragment) string {
+	text := f.Text
 
-	if f.italic {
+	if f.Italic {
 		text = "<i>" + text + "</i>"
 	}
 
-	if f.bold {
+	if f.Bold {
 		text = "<b>" + text + "</b>"
 	}
 
-	if f.underline {
+	if f.Underline {
 		text = "<u>" + text + "</u>"
 	}
 
-	if f.color != nil {
-		rgba := color.RGBAModel.Convert(f.color).(color.RGBA)
+	if f.Color != nil {
+		rgba := color.RGBAModel.Convert(f.Color).(color.RGBA)
 
 		if rgba.A != 255 {
 

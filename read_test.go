@@ -1,11 +1,15 @@
-package subtitles
+package subfix
 
 import (
 	"testing"
 )
 
 func TestReadFile(t *testing.T) {
-	_, err := ReadFile("./test.srt")
+	AddParser("srt", func(contents string) (*Subtitles, error) {
+		return &Subtitles{}, nil
+	})
+
+	_, err := ReadFile("./dream.srt")
 
 	if err != nil {
 		t.Fatal(err)

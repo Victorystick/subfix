@@ -1,11 +1,13 @@
-package subtitles
+package sub
 
 import (
+	. "github.com/victorystick/subfix"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+	"image/color"
 )
 
 // sub.go Manages conversion to and from `.sub` subtitles.
@@ -18,7 +20,12 @@ const (
 	framesASecond = int64(time.Second) / 24
 )
 
-func ParseSub(content string) (*Subtitles, error) {
+func Register() {
+	AddParser("sub", Parse)
+	AddEmitter("sub", Emit)
+}
+
+func Parse(content string) (*Subtitles, error) {
 	lines := strings.Split(content, "\n")
 
 	subs := new(Subtitles)
@@ -64,15 +71,15 @@ func ParseSub(content string) (*Subtitles, error) {
 
 		for i, line := range textLines {
 			frags[i] = Fragment{
-				text: line,
+				Text: line,
 			}
 		}
 
 		entry := &Entry{
-			id:    next,
-			start: framesToTime(start),
-			end:   framesToTime(end),
-			frags: frags,
+			Id:    next,
+			Start: framesToTime(start),
+			End:   framesToTime(end),
+			Frags: frags,
 		}
 
 		subs.Append(entry)
@@ -95,45 +102,45 @@ func timeToFrames(t time.Time) int {
 		t.Nanosecond()/(1000000000/24)
 }
 
-func (s Subtitles) Sub() string {
-	strs := make([]string, len(s.entries))
+func Emit(s *Subtitles) string {
+	strs := make([]string, len(s.Entries))
 
-	for i, e := range s.entries {
-		strs[i] = e.Sub()
+	for i, e := range s.Entries {
+		strs[i] = SubEntry(e)
 	}
 
 	return strings.Join(strs, "\n") + "\n"
 }
 
-func (e Entry) Sub() string {
-	frags := make([]string, len(e.frags))
+func SubEntry(e *Entry) string {
+	frags := make([]string, len(e.Frags))
 
-	for i, frag := range e.frags {
-		frags[i] = frag.Sub()
+	for i, frag := range e.Frags {
+		frags[i] = SubFrag(frag)
 	}
 
 	str := fmt.Sprintf("{%d}{%d}%s",
-		timeToFrames(e.start),
-		timeToFrames(e.end),
+		timeToFrames(e.Start),
+		timeToFrames(e.End),
 		strings.Join(frags, ""))
 
 	return str
 }
 
-func (f Fragment) Sub() string {
-	text := f.text
+func SubFrag(f Fragment) string {
+	text := f.Text
 
 	var styles []string
 
-	if f.italic {
+	if f.Italic {
 		styles = append(styles, "i")
 	}
 
-	if f.bold {
+	if f.Bold {
 		styles = append(styles, "b")
 	}
 
-	if f.underline {
+	if f.Underline {
 		styles = append(styles, "u")
 	}
 
@@ -142,8 +149,8 @@ func (f Fragment) Sub() string {
 			strings.Join(styles, ","), text)
 	}
 
-	if f.color != nil {
-		rgba := color.RGBAModel.Convert(f.color).(color.RGBA)
+	if f.Color != nil {
+		rgba := color.RGBAModel.Convert(f.Color).(color.RGBA)
 
 		text = fmt.Sprintf(
 			"{c:$%02x%02x%02x}%s",

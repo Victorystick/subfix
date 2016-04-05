@@ -1,9 +1,11 @@
-package subtitles
+package sub
 
 import (
+	. "github.com/victorystick/subfix"
 	"fmt"
 	"testing"
 	"time"
+	"image/color"
 )
 
 const okSub = `{252}{312}Elephant's Dream
@@ -34,7 +36,7 @@ func TestTimeToFrames(t *testing.T) {
 }
 
 func TestParseSub(t *testing.T) {
-	subs, err := ParseSub(okSub)
+	subs, err := Parse(okSub)
 
 	if err != nil {
 		t.Error(err)
@@ -44,27 +46,27 @@ func TestParseSub(t *testing.T) {
 		t.Error("ParseSrt shouldn't return nil after a successful parse.")
 	}
 
-	if subs.Sub() != okSub {
+	if Emit(subs) != okSub {
 		fmt.Printf("`%s`\n", okSub)
-		fmt.Printf("`%s`\n", subs.Sub())
+		fmt.Printf("`%s`\n", Emit(subs))
 		t.Error("The subtitles shoudn't be changed by parsing and printing.")
 	}
 }
 
 func TestShiftSub(t *testing.T) {
-	subs, err := ParseSub(okSub)
+	subs, err := Parse(okSub)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if subs.entries[0].start.Second() != 10 {
+	if subs.Entries[0].Start.Second() != 10 {
 		t.Error("The 0th Entry's start sec is 10")
 	}
 
 	subs.Shift(time.Second)
 
-	if subs.entries[0].start.Second() != 11 {
+	if subs.Entries[0].Start.Second() != 11 {
 		t.Error("A shift of 10s + 1s should be 11s!")
 	}
 }
@@ -74,12 +76,12 @@ const italicAndGreen =
 
 func TestFragmentString(t *testing.T) {
 	frag := Fragment{
-		italic: true,
-		text: "Wooh! I'm italic and green!",
-		color: color.RGBA{0, 0xff, 0, 0xff},
+		Italic: true,
+		Text: "Wooh! I'm italic and green!",
+		Color: color.RGBA{0, 0xff, 0, 0xff},
 	}
 
-	if frag.Sub() != italicAndGreen {
-		t.Errorf("%s should equal %s", frag.Sub(), italicAndGreen)
+	if SubFrag(frag) != italicAndGreen {
+		t.Errorf("%s should equal %s", SubFrag(frag), italicAndGreen)
 	}
 }

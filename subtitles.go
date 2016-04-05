@@ -1,4 +1,4 @@
-package subtitles
+package subfix
 
 import (
 	"errors"
@@ -6,20 +6,28 @@ import (
 	"time"
 )
 
+type Stringer func(*Subtitles) string
+
+var stringers = make(map[string]Stringer)
+
+func AddEmitter(extension string, stringer Stringer) {
+	stringers[extension] = stringer
+}
+
 type Subtitles struct {
-	entries  []*Entry
+	Entries  []*Entry
 	filename string
 }
 
 func (s *Subtitles) Append(e *Entry) {
-	s.entries = append(s.entries, e)
+	s.Entries = append(s.Entries, e)
 }
 
 // Shifts all Entries delta time.
 func (s *Subtitles) Shift(delta time.Duration) *Subtitles {
-	for _, e := range s.entries {
-		e.start = e.start.Add(delta)
-		e.end = e.end.Add(delta)
+	for _, e := range s.Entries {
+		e.Start = e.Start.Add(delta)
+		e.End = e.End.Add(delta)
 	}
 
 	return s
@@ -29,22 +37,20 @@ func (s *Subtitles) Shift(delta time.Duration) *Subtitles {
 // with the given extension. An error is returned if the
 // extension is unknown.
 func (s *Subtitles) As(ext string) (string, error) {
-	switch ext {
-	case "srt":
-		return s.Srt(), nil
-	case "sub":
-		return s.Sub(), nil
+	fn, ok := stringers[ext]
+
+	if !ok {
+		return "", errors.New("Cannot format subtitles with extension: " + ext)
 	}
 
-	return "",
-		errors.New("Cannot format subtitles with extension: " + ext)
+	return fn(s), nil
 }
 
 // Two pairs of Subtitles are assumed to be equal,
 // if all their entries are equivalent.
 func (s Subtitles) Equal(s2 Subtitles) bool {
-	for i, e := range s.entries {
-		if !e.Equal(*s2.entries[i]) {
+	for i, e := range s.Entries {
+		if !e.Equal(*s2.Entries[i]) {
 			return false
 		}
 	}
@@ -56,41 +62,41 @@ func (s Subtitles) Equal(s2 Subtitles) bool {
 // within any interval. The text itself may consist of a number of
 // fragments, each with different styles.
 type Entry struct {
-	// id specifies the number of the entry, starting with 1
-	id int
+	// Id specifies the number of the entry, starting with 1
+	Id int
 
-	// start specifies the starting time at which the subtitle
+	// Start specifies the starting time at which the subtitle
 	// is to be displayed. The video is assumed to begin
 	// Year 0, January, 1st 00:00:00.000000000
-	start time.Time
+	Start time.Time
 
-	// end specifies the ending time when the subtitles
+	// End specifies the ending time when the subtitles
 	// should no longer be displayed.
-	end time.Time
+	End time.Time
 
-	// frags is the slice of Fragments or pieces of text that
+	// Frags is the slice of Fragments or pieces of text that
 	// are to be displayed.
-	frags []Fragment
+	Frags []Fragment
 }
 
 // Two entries are assumed to be equal if
 // their ids, start times and end times,
 // and fragments are equal
 func (e Entry) Equal(e2 Entry) bool {
-	if e.id != e2.id {
+	if e.Id != e2.Id {
 		return false
 	}
 
-	if !e.start.Equal(e2.start) {
+	if !e.Start.Equal(e2.Start) {
 		return false
 	}
 
-	if !e.end.Equal(e2.end) {
+	if !e.End.Equal(e2.End) {
 		return false
 	}
 
-	for i, frag := range e.frags {
-		if !frag.Equal(e2.frags[i]) {
+	for i, frag := range e.Frags {
+		if !frag.Equal(e2.Frags[i]) {
 			return false
 		}
 	}
@@ -99,23 +105,23 @@ func (e Entry) Equal(e2 Entry) bool {
 }
 
 type Fragment struct {
-	bold, italic, underline bool
-	text                    string
-	color                   color.Color
+	Bold, Italic, Underline bool
+	Text                    string
+	Color                   color.Color
 }
 
 func (f Fragment) Equal(f2 Fragment) bool {
-	if f.color == nil {
-		if f2.color != nil {
+	if f.Color == nil {
+		if f2.Color != nil {
 			return false
 		}
 	} else {
-		if f2.color == nil {
+		if f2.Color == nil {
 			return false
 		}
 
-		r, g, b, a := f.color.RGBA()
-		r2, g2, b2, a2 := f2.color.RGBA()
+		r, g, b, a := f.Color.RGBA()
+		r2, g2, b2, a2 := f2.Color.RGBA()
 
 		colorsEqual := r == r2 && g == g2 && b == b2 && a == a2
 
@@ -124,10 +130,8 @@ func (f Fragment) Equal(f2 Fragment) bool {
 		}
 	}
 
-	return f.bold == f2.bold &&
-		f.italic == f2.italic &&
-		f.underline == f2.underline &&
-		f.text == f2.text
+	return f.Bold == f2.Bold &&
+		f.Italic == f2.Italic &&
+		f.Underline == f2.Underline &&
+		f.Text == f2.Text
 }
-
-type subtitleParser func(string) (*Subtitles, error)

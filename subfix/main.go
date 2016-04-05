@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/victorystick/subfix/subtitles"
+	"github.com/victorystick/subfix"
+	"github.com/victorystick/subfix/srt"
+	"github.com/victorystick/subfix/sub"
 	"io/ioutil"
 	"os"
 	"time"
@@ -13,6 +15,11 @@ var (
 	outfile string
 	shift   time.Duration
 )
+
+func init()  {
+	srt.Register()
+	sub.Register()
+}
 
 func main() {
 	flag.StringVar(&outfile, "outfile", "", "Name of the output file.")
@@ -36,12 +43,12 @@ func main() {
 		outfile = filename
 	}
 
-	subs, err := subtitles.ReadFile(filename)
+	subs, err := subfix.ReadFile(filename)
 
 	die(err)
 
 	if outfile != filename {
-		ext, err := subtitles.Extension(outfile)
+		ext, err := subfix.Extension(outfile)
 
 		die(err)
 
